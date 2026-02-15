@@ -1,0 +1,41 @@
+# === Security ===
+.env
+.env.*
+.claude/
+*.pem
+*.key
+*credentials*
+secrets.toml
+secrets.yaml
+secrets.json
+
+# === Python ===
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+venv/
+.venv/
+env/
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# === Testing / IDE ===
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+htmlcov/
+.coverage
+.hypothesis/
+*.log
+
+# === Output ===
+results/
+RESULTS/
+outputs/
+
+# === OS ===
+.DS_Store
+Thumbs.db
