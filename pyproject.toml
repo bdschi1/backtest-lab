@@ -1,0 +1,31 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.backends"
+
+[project]
+name = "backtest-lab"
+version = "0.1.0"
+description = "Event-driven backtesting engine with execution realism, enforced risk management, and look-ahead bias prevention."
+requires-python = ">=3.11"
+license = {text = "MIT"}
+
+dependencies = [
+    "polars>=1.0",
+    "yfinance>=0.2.30",
+    "pydantic>=2.0",
+    "numpy>=1.24",
+]
+
+[project.optional-dependencies]
+bloomberg = ["blpapi>=3.19"]
+ibkr = ["ib_insync>=0.9.86"]
+full = ["tiktoken>=0.5", "tenacity>=8.0", "scipy>=1.11"]
+dev = ["pytest>=7.0", "pytest-cov>=4.0", "ruff>=0.1"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-v --tb=short"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
