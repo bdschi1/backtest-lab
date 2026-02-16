@@ -3,6 +3,14 @@
 Same pattern as ls-portfolio-lab and multi-agent-investment-committee.
 Auto-detects installed providers; defaults to Yahoo Finance.
 
+Registered providers:
+    - Yahoo Finance — always available (free, daily EOD)
+    - Bloomberg Terminal — requires blpapi (intraday + EOD, bid/ask)
+    - Interactive Brokers — requires ib_insync (real-time, intraday, bid/ask)
+    - Refinitiv / LSEG — planned (tick data, reference data)
+    - Polygon.io — planned (REST + WebSocket, trades & quotes)
+    - Databento — planned (tick-by-tick, normalized)
+
 Usage:
     from data.provider_factory import get_provider, available_providers
 
@@ -39,6 +47,26 @@ _PROVIDER_REGISTRY: list[tuple[str, str, str, str | None]] = [
         "data.ib_provider",
         "IBProvider",
         "data.ib_provider.is_available",
+    ),
+    # Planned providers — stubs for registry awareness.
+    # Implementations not yet available; availability check will fail gracefully.
+    (
+        "Refinitiv",
+        "data.refinitiv_provider",
+        "RefinitivProvider",
+        "data.refinitiv_provider.is_available",
+    ),
+    (
+        "Polygon.io",
+        "data.polygon_provider",
+        "PolygonProvider",
+        "data.polygon_provider.is_available",
+    ),
+    (
+        "Databento",
+        "data.databento_provider",
+        "DatabentoProvider",
+        "data.databento_provider.is_available",
     ),
 ]
 

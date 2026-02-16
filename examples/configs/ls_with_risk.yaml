@@ -1,0 +1,72 @@
+# ls_with_risk.yaml
+# Long-short momentum strategy with full risk stack engaged.
+# Live Yahoo data, market-impact fill model, ATR-based stops,
+# drawdown circuit breaker, exposure limits, and regime detection.
+
+initial_capital: 1_000_000
+max_position_pct: 5.0
+signal_threshold: 0.8
+rebalance_frequency: weekly
+
+signal:
+  type: momentum
+  momentum_formation_days: 252
+  momentum_skip_days: 21
+  momentum_zscore_clip: 3.0
+
+data:
+  universe:
+    - AAPL
+    - MSFT
+    - AMZN
+    - GOOGL
+    - META
+    - NVDA
+    - TSLA
+    - JPM
+    - V
+    - JNJ
+    - XOM
+    - UNH
+    - PG
+    - HD
+    - BAC
+    - PFE
+    - CSCO
+    - INTC
+    - DIS
+    - KO
+  start_date: "2020-01-01"
+  end_date: "2024-12-31"
+  live: true
+  provider: yahoo
+
+fill:
+  model: impact
+  spread_default_bps: 3.0
+  impact_eta: 0.1
+
+execution:
+  slippage_bps: 2.0
+  commission_rate: 0.0005
+  borrow_gc_rate: 0.005
+
+risk:
+  enabled: true
+  stop_multiplier: 2.0
+  stop_max_loss_pct: 5.0
+  sizer_max_pct_equity: 5.0
+  sizer_max_pct_adv: 2.0
+  drawdown_warning_pct: -8.0
+  drawdown_halt_pct: -15.0
+  exposure_max_gross_pct: 200.0
+  exposure_max_net_pct: 60.0
+  exposure_max_single_name_pct: 5.0
+
+regime:
+  enabled: true
+  lookback_days: 252
+
+output:
+  tearsheet_path: "output/ls_with_risk_tearsheet.html"
+  verbose: true

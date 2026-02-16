@@ -1,0 +1,80 @@
+# composite_pod_style.yaml
+# Pod-shop simulation: blended momentum + mean-reversion signal,
+# full transaction-cost realism, tight risk limits, regime overlay.
+#
+# Designed for a senior PM running a $2M sleeve inside a
+# Point72-style multi-manager platform. Gross leverage capped at 180%,
+# net exposure kept within +/-40%, and single-name risk held to 8%.
+
+initial_capital: 2_000_000
+max_position_pct: 8.0
+signal_threshold: 0.6
+rebalance_frequency: weekly
+
+signal:
+  type: composite
+  momentum_formation_days: 126
+  momentum_skip_days: 10
+  momentum_zscore_clip: 3.0
+  mean_reversion_lookback_days: 20
+  mean_reversion_zscore_clip: 2.5
+  composite_weights:
+    momentum: 0.6
+    mean_reversion: 0.4
+
+data:
+  universe:
+    - AAPL
+    - MSFT
+    - AMZN
+    - GOOGL
+    - META
+    - NVDA
+    - TSLA
+    - JPM
+    - GS
+    - MS
+    - V
+    - MA
+    - UNH
+    - JNJ
+    - PFE
+    - XOM
+    - CVX
+    - HD
+    - LOW
+    - COST
+  start_date: "2019-01-01"
+  end_date: "2024-12-31"
+  live: true
+  provider: yahoo
+
+fill:
+  model: impact
+  spread_default_bps: 2.5
+  impact_eta: 0.08
+
+execution:
+  slippage_bps: 1.5
+  commission_rate: 0.0004
+  borrow_gc_rate: 0.004
+
+risk:
+  enabled: true
+  stop_multiplier: 1.5
+  stop_max_loss_pct: 3.0
+  sizer_max_pct_equity: 8.0
+  sizer_max_pct_adv: 1.5
+  drawdown_warning_pct: -5.0
+  drawdown_halt_pct: -10.0
+  exposure_max_gross_pct: 180.0
+  exposure_max_net_pct: 40.0
+  exposure_max_single_name_pct: 8.0
+
+regime:
+  enabled: true
+  lookback_days: 126
+
+output:
+  tearsheet_path: "output/composite_pod_tearsheet.html"
+  verbose: true

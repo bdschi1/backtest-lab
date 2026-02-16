@@ -1,0 +1,48 @@
+# momentum_basic.yaml
+# Simplest momentum backtest — 10 large caps, synthetic data, no risk controls.
+# Good starting point to verify signal generation and portfolio construction.
+
+initial_capital: 1_000_000
+max_position_pct: 10.0
+signal_threshold: 0.5
+rebalance_frequency: weekly
+
+signal:
+  type: momentum
+  momentum_formation_days: 126
+  momentum_skip_days: 5
+  momentum_zscore_clip: 3.0
+
+data:
+  universe:
+    - AAPL
+    - MSFT
+    - AMZN
+    - GOOGL
+    - META
+    - NVDA
+    - TSLA
+    - JPM
+    - V
+    - JNJ
+  start_date: "2022-01-01"
+  end_date: "2024-01-01"
+  live: false
+  provider: yahoo
+
+fill:
+  model: mid
+
+execution:
+  slippage_bps: 0.0
+  commission_rate: 0.0
+  borrow_gc_rate: 0.0
+
+risk:
+  enabled: false
+
+regime:
+  enabled: false
+
+output:
+  verbose: true

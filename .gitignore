@@ -30,11 +30,14 @@ htmlcov/
 .coverage
 .hypothesis/
 *.log
+.idea/
+.vscode/
 
 # === Output ===
 results/
 RESULTS/
 outputs/
+*.html
 
 # === OS ===
 .DS_Store

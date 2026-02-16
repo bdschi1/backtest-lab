@@ -101,8 +101,8 @@ class DrawdownController:
         Returns:
             DrawdownCheck with current state and trading permission.
         """
-        # Update peak
-        if equity > self._peak_equity:
+        # Update peak — treat equity at or above peak as "not in drawdown"
+        if equity >= self._peak_equity:
             self._peak_equity = equity
             self._days_in_dd = 0
         else:

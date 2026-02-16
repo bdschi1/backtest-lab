@@ -98,8 +98,8 @@ class MomentumSignal(Signal):
             ret = (price_end - price_start) / price_start
             momentum_returns[ticker] = ret
 
-        if len(momentum_returns) < 3:
-            # Need enough tickers for cross-sectional ranking
+        if len(momentum_returns) < 2:
+            # Need at least 2 tickers for cross-sectional ranking
             return {}
 
         # Cross-sectional z-score

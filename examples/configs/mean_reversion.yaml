@@ -1,0 +1,47 @@
+# mean_reversion.yaml
+# Mean-reversion on a broad ETF universe with daily rebalancing.
+# Spread-aware fill model captures the real cost of frequent trading.
+# No risk module — useful for isolating pure signal PnL.
+
+initial_capital: 500_000
+max_position_pct: 15.0
+signal_threshold: 1.0
+rebalance_frequency: daily
+
+signal:
+  type: mean_reversion
+  mean_reversion_lookback_days: 20
+  mean_reversion_zscore_clip: 2.5
+
+data:
+  universe:
+    - SPY
+    - QQQ
+    - IWM
+    - EFA
+    - EEM
+    - TLT
+    - GLD
+    - VNQ
+  start_date: "2018-01-01"
+  end_date: "2024-01-01"
+  live: false
+  provider: yahoo
+
+fill:
+  model: spread
+  spread_default_bps: 1.5
+
+execution:
+  slippage_bps: 1.0
+  commission_rate: 0.0003
+  borrow_gc_rate: 0.0
+
+risk:
+  enabled: false
+
+regime:
+  enabled: false
+
+output:
+  verbose: true
