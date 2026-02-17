@@ -9,10 +9,8 @@ import json
 import tempfile
 from datetime import date
 from pathlib import Path
-from unittest.mock import MagicMock, patch
 
 import polars as pl
-import pytest
 
 
 # ---------------------------------------------------------------------------

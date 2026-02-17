@@ -1,7 +1,6 @@
 """Tests for regime detection and adaptation."""
 
 import numpy as np
-import pytest
 
 from regime.detector import Regime, VolatilityRegimeDetector
 from regime.adapter import RegimeAdapter, RegimeOverrides

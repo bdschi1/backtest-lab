@@ -4,7 +4,6 @@ from datetime import date, timedelta
 
 import numpy as np
 import polars as pl
-import pytest
 
 from signals.momentum import CompositeSignal, MeanReversionSignal, MomentumSignal
 

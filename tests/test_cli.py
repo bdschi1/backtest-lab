@@ -2,9 +2,7 @@
 
 from datetime import date, timedelta
 
-import numpy as np
 import polars as pl
-import pytest
 
 
 def _make_simple_prices(n_days: int = 60) -> pl.DataFrame:

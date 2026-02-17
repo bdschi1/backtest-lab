@@ -22,7 +22,6 @@ from datetime import date
 from typing import Any
 
 import numpy as np
-import polars as pl
 
 logger = logging.getLogger(__name__)
 
@@ -82,7 +81,7 @@ def compute_benchmark_metrics(
     strat = np.array(strategy_returns[:n])
     bench = np.array(benchmark_returns[:n])
 
-    daily_rf = (1 + risk_free_rate) ** (1/252) - 1
+    (1 + risk_free_rate) ** (1/252) - 1
 
     # Cumulative returns
     strat_cum = (1 + strat).prod() - 1

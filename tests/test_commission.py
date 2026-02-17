@@ -1,6 +1,5 @@
 """Tests for commission models."""
 
-import pytest
 
 from execution.commission import (
     PerShareCommission,

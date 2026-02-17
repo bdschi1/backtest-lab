@@ -2,15 +2,12 @@
 
 from datetime import date, timedelta
 
-import numpy as np
 import polars as pl
-import pytest
 
 from engine.backtest import BacktestConfig, BacktestEngine, Portfolio, Position
-from execution.borrow import FixedBorrow, TieredBorrow
-from execution.commission import PerShareCommission, ZeroCommission
-from execution.fill_model import MarketImpactFill, MidPriceFill, SpreadAwareFill
-from execution.slippage import FixedSlippage, ZeroSlippage
+from execution.borrow import FixedBorrow
+from execution.commission import PerShareCommission
+from execution.fill_model import MidPriceFill, SpreadAwareFill
 from signals.base import Signal
 from signals.momentum import MomentumSignal
 
@@ -235,7 +232,7 @@ class TestBacktestEngine:
         prices = _make_simple_prices(60)
         config = BacktestConfig(rebalance_frequency="weekly")
         engine = BacktestEngine(signal=AlwaysLongSignal(), config=config)
-        snapshots = engine.run(prices)
+        engine.run(prices)
 
         # Weekly rebalance should only trade on Mondays
         trade_dates = [t.date for t in engine.trades]

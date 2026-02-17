@@ -23,8 +23,6 @@ from __future__ import annotations
 
 import html
 import logging
-import math
-from datetime import date
 from pathlib import Path
 from typing import Any
 
@@ -63,7 +61,7 @@ def generate_tearsheet(
     returns = [s.daily_return for s in engine.snapshots]
     drawdowns = _compute_drawdowns(equity)
     regimes = [s.regime for s in engine.snapshots]
-    circuit_states = [s.circuit_state for s in engine.snapshots]
+    [s.circuit_state for s in engine.snapshots]
 
     # Monthly returns
     monthly = _compute_monthly_returns(engine.snapshots)

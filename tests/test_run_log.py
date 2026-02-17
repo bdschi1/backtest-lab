@@ -7,7 +7,6 @@ import tempfile
 from datetime import date, timedelta
 from pathlib import Path
 
-import pytest
 
 from btconfig.run_config import DataConfig, OutputConfig, RunConfig
 from btconfig.runner import run_backtest

@@ -1,6 +1,5 @@
 """Tests for benchmark comparison metrics."""
 
-import pytest
 import numpy as np
 from risk.benchmark import compute_benchmark_metrics, _empty_metrics
 

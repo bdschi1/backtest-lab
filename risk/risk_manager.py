@@ -16,13 +16,13 @@ If ANY check fails, the trade is rejected or modified.
 from __future__ import annotations
 
 import logging
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any
 
 from risk.drawdown_control import CircuitState, DrawdownController
 from risk.exposure_limits import ExposureLimits
 from risk.position_sizer import PositionSizer
-from risk.stop_loss import ATRTrailingStop, NoStopLoss, StopLossModel
+from risk.stop_loss import ATRTrailingStop, StopLossModel
 
 logger = logging.getLogger(__name__)
 

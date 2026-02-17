@@ -118,7 +118,6 @@ class DrawdownController:
         max_dd = current_dd  # simplified — engine tracks full history
 
         # State transitions
-        prev_state = self._current_state
 
         if self._current_state == CircuitState.HALTED:
             # Need to recover above resume threshold

@@ -9,7 +9,7 @@ from __future__ import annotations
 from pathlib import Path
 
 
-def load_config(path: str) -> "RunConfig":
+def load_config(path: str) -> "RunConfig":  # noqa: F821
     """Load and validate a YAML config file.
 
     Args:
@@ -46,7 +46,7 @@ def load_config(path: str) -> "RunConfig":
     return RunConfig(**raw)
 
 
-def dump_config(config: "RunConfig", path: str) -> None:
+def dump_config(config: "RunConfig", path: str) -> None:  # noqa: F821
     """Save a RunConfig to a YAML file.
 
     Args:

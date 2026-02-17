@@ -1,6 +1,5 @@
 """Tests for risk management module."""
 
-import pytest
 
 from risk.stop_loss import ATRTrailingStop, NoStopLoss
 from risk.position_sizer import PositionSizer

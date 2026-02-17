@@ -1,6 +1,5 @@
 """Tests for US equity ticker mapping."""
 
-import pytest
 from data.ticker_map import (
     US_EQUITY_MAP,
     ticker_to_name,

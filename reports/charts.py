@@ -10,7 +10,6 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
-from typing import Any
 
 import matplotlib
 matplotlib.use("Agg")
@@ -152,7 +151,7 @@ def plot_monthly_heatmap(
         return output_path
 
     years = sorted(set(y for y, m in monthly_returns))
-    months = list(range(1, 13))
+    list(range(1, 13))
 
     data = np.full((len(years), 12), np.nan)
     for (y, m), val in monthly_returns.items():
@@ -168,7 +167,7 @@ def plot_monthly_heatmap(
     )
 
     vmax = max(abs(np.nanmin(data)), abs(np.nanmax(data)), 5.0)
-    im = ax.imshow(data, cmap=cmap, aspect="auto", vmin=-vmax, vmax=vmax)
+    ax.imshow(data, cmap=cmap, aspect="auto", vmin=-vmax, vmax=vmax)
 
     # Labels
     month_labels = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",

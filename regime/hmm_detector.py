@@ -27,11 +27,10 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from enum import Enum
 
 import numpy as np
 
-from regime.detector import Regime, RegimeState
+from regime.detector import Regime
 
 logger = logging.getLogger(__name__)
 
@@ -131,7 +130,7 @@ class HMMRegimeDetector:
             self._fit(daily_returns)
 
         # Classify current state using Viterbi-like approach
-        window = daily_returns[-self._lookback:] if len(daily_returns) >= self._lookback else daily_returns
+        daily_returns[-self._lookback:] if len(daily_returns) >= self._lookback else daily_returns
         recent = daily_returns[-21:]  # use last month for classification
 
         state_id, state_prob = self._classify(recent)

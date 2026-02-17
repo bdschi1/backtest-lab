@@ -7,7 +7,7 @@ import pytest
 
 from bias.lookahead_guard import LookaheadGuard
 from bias.walk_forward import WalkForwardSplitter
-from bias.overfit_detector import assess_overfitting, OverfitReport
+from bias.overfit_detector import assess_overfitting
 from bias.walk_forward import WalkForwardResult, WalkForwardFold
 
 

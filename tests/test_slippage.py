@@ -1,6 +1,5 @@
 """Tests for slippage models."""
 
-import pytest
 
 from execution.slippage import FixedSlippage, VolumeSlippage, ZeroSlippage
 

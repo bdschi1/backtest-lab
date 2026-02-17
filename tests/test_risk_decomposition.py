@@ -1,6 +1,5 @@
 """Tests for risk decomposition module."""
 
-import pytest
 import numpy as np
 from unittest.mock import MagicMock
 from datetime import date, timedelta

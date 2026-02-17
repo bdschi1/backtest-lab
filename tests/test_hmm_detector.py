@@ -1,7 +1,6 @@
 """Tests for the HMM regime detector."""
 
 import numpy as np
-import pytest
 
 from regime.detector import Regime
 from regime.hmm_detector import HMMRegimeDetector, HMMState

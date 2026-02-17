@@ -15,7 +15,7 @@ Design notes:
 from __future__ import annotations
 
 import argparse
-from datetime import date, timedelta
+from datetime import date
 from typing import ClassVar, Literal
 
 from pydantic import BaseModel, Field, field_validator

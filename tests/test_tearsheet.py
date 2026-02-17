@@ -8,7 +8,7 @@ import numpy as np
 import polars as pl
 import pytest
 
-from engine.backtest import BacktestConfig, BacktestEngine
+from engine.backtest import BacktestEngine
 from reports.tearsheet import (
     _compute_drawdowns,
     _compute_monthly_returns,

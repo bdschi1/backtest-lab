@@ -6,13 +6,11 @@ detection are wired into the backtest engine's main loop.
 
 from datetime import date, timedelta
 
-import numpy as np
 import polars as pl
-import pytest
 
-from engine.backtest import BacktestConfig, BacktestEngine, Portfolio, Position
+from engine.backtest import BacktestConfig, BacktestEngine
 from execution.commission import PerShareCommission
-from execution.fill_model import MidPriceFill, SpreadAwareFill
+from execution.fill_model import SpreadAwareFill
 from execution.slippage import FixedSlippage
 from execution.borrow import FixedBorrow
 from regime.detector import VolatilityRegimeDetector
@@ -23,7 +21,6 @@ from risk.position_sizer import PositionSizer
 from risk.drawdown_control import DrawdownController
 from risk.exposure_limits import ExposureLimits
 from signals.base import Signal
-from signals.momentum import MomentumSignal
 
 
 # ---------------------------------------------------------------------------

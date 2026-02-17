@@ -24,7 +24,6 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from datetime import date
 from typing import Any
 
 import numpy as np
@@ -134,7 +133,7 @@ class RiskDecomposition:
         if not self._snapshots:
             return {}
 
-        equities = [s.equity for s in self._snapshots]
+        [s.equity for s in self._snapshots]
         gross_pcts = []
         net_pcts = []
         long_pcts = []

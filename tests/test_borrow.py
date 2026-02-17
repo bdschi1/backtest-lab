@@ -1,6 +1,5 @@
 """Tests for borrow cost models."""
 
-import pytest
 
 from execution.borrow import FixedBorrow, TieredBorrow, ZeroBorrow
 
