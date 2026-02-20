@@ -31,6 +31,9 @@ ui = ["pyyaml>=6.0", "streamlit>=1.30", "questionary>=2.0"]
 [project.scripts]
 backtest-lab = "cli:main"
 
+[tool.hatch.build.targets.wheel]
+packages = ["bias", "bridges", "btconfig", "data", "engine", "execution", "regime", "reports", "risk", "signals", "ui"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-v --tb=short"
