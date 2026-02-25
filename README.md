@@ -252,6 +252,9 @@ backtest-lab/
     lookahead_guard.py      Structural prevention of look-ahead bias
     walk_forward.py         Anchored + rolling walk-forward splits
     overfit_detector.py     Sharpe decay + deflated Sharpe ratio (Bailey & Lopez de Prado)
+    sharpe_inference.py     Full Sharpe inference: PSR, MinTRL, critical SR, power, FDR, FWER
+    sharpe_statistics.py    Sharpe CI with autocorrelation adjustment, PSR, MinTRL
+    rademacher.py           Rademacher complexity bounds for data snooping
   data/
     provider.py             DataProvider ABC
     yahoo_provider.py       Free EOD data via yfinance
@@ -421,6 +424,14 @@ The **RegimeAdapter** maps regimes to parameter overrides:
 - **LookaheadGuard** -- structurally prevents signals from seeing future data (not by convention, by code)
 - **WalkForwardSplitter** -- anchored or rolling train/test splits (default: 504/63 days)
 - **OverfitDetector** -- flags if in-sample Sharpe decays >50% out-of-sample; computes deflated Sharpe ratio adjusted for multiple testing (Bailey & Lopez de Prado)
+- **Sharpe Inference** (`bias/sharpe_inference.py`) -- rigorous statistical testing for Sharpe ratios:
+  - **Probabilistic Sharpe Ratio (PSR):** P(true SR > benchmark) accounting for skewness, kurtosis, and autocorrelation (Bailey & Lopez de Prado, 2014)
+  - **Minimum Track Record Length (MinTRL):** minimum observations needed for statistical significance
+  - **Critical Sharpe Ratio:** threshold SR for rejecting H₀ at level α, adjusted for multiple testing
+  - **Statistical Power:** P(reject H₀ | true SR = SR₁) for sample size planning
+  - **False Discovery Rate:** posterior and observed FDR for strategy testing pipelines
+  - **FWER Corrections:** Bonferroni, Šidák, and Holm step-down adjustments for multiple comparisons
+  - **Expected Maximum SR:** exact E[max] of K normals via Gauss-Hermite quadrature (replaces √(2·ln(K)) approximation)
 
 ---
 

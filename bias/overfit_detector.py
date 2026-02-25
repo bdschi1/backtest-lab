@@ -20,7 +20,9 @@ import math
 from dataclasses import dataclass
 
 import numpy as np
+from scipy.stats import norm
 
+from bias.sharpe_inference import expected_maximum_sharpe_ratio, sharpe_ratio_variance
 from bias.walk_forward import WalkForwardResult
 
 logger = logging.getLogger(__name__)
@@ -148,6 +150,11 @@ def _deflated_sharpe(
         - Non-normality of returns (skew, kurtosis)
         - Sample size
 
+    Uses sharpe_ratio_variance() for the full asymptotic SE (with
+    non-normality corrections) and expected_maximum_sharpe_ratio()
+    for the exact E[max] of K normals (replacing the √(2·ln(K))
+    approximation).
+
     Args:
         observed_sharpe: The Sharpe ratio you observed.
         num_trials: Number of strategies / param combos tested.
@@ -162,29 +169,22 @@ def _deflated_sharpe(
         return None
 
     try:
-        # Expected maximum Sharpe under null (all strategies are noise)
-        # E[max(Z_1, ..., Z_N)] ≈ sqrt(2 * ln(N)) for iid standard normals
-        e_max_sharpe = math.sqrt(2 * math.log(num_trials))
-
-        # Standard error of Sharpe estimate
-        se = math.sqrt(
-            (1 + 0.5 * observed_sharpe ** 2
-             - skew * observed_sharpe
-             + (kurtosis - 3) / 4 * observed_sharpe ** 2)
-            / num_observations
+        # Full asymptotic variance with non-normality corrections
+        var = sharpe_ratio_variance(
+            observed_sharpe, num_observations,
+            skew=skew, kurtosis=kurtosis,
         )
-
-        if se <= 0:
+        if var <= 0:
             return None
+        se = math.sqrt(var)
 
-        # Deflated = (observed - E[max]) / SE
+        # Expected maximum SR under the null (exact for small K,
+        # replaces the √(2·ln(K)) approximation)
+        e_max_sharpe = expected_maximum_sharpe_ratio(num_trials, var, sr0=0.0)
+
+        # Deflated = (observed - E[max]) / SE → probability
         deflated = (observed_sharpe - e_max_sharpe) / se
-
-        # Convert to probability (one-sided test)
-        from math import erf
-        prob = 0.5 * (1 + erf(deflated / math.sqrt(2)))
-
-        return prob
+        return float(norm.cdf(deflated))
 
     except (ValueError, ZeroDivisionError):
         return None
