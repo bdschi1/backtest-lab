@@ -398,6 +398,8 @@ Post-backtest risk decomposition operates at three levels:
 - Idiosyncratic return ratio (% of variance unexplained by market)
 - Idiosyncratic volatility and idiosyncratic Sharpe ratio
 
+In plain terms: how concentrated is the portfolio, how much of the return came from market exposure vs. stock-picking, and is the stock-specific return consistent enough to be meaningful.
+
 All risk decomposition metrics appear in the HTML tearsheet, Markdown tearsheet, and Streamlit dashboard.
 
 ---
@@ -432,6 +434,8 @@ The **RegimeAdapter** maps regimes to parameter overrides:
   - **False Discovery Rate:** posterior and observed FDR for strategy testing pipelines
   - **FWER Corrections:** Bonferroni, Šidák, and Holm step-down adjustments for multiple comparisons
   - **Expected Maximum SR:** exact E[max] of K normals via Gauss-Hermite quadrature (replaces √(2·ln(K)) approximation)
+
+In plain terms, these tools answer: is this backtest result statistically real, or could it be luck? They adjust for how many strategies were tested, how long the track record is, and whether the return distribution is well-behaved.
 
 ---
 

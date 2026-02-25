@@ -42,3 +42,12 @@ outputs/
 # === OS ===
 .DS_Store
 Thumbs.db
+
+# Hardening additions
+!.env.example
+*.swp
+*.swo
+*~
+.tox/
+*.whl
+*.tar.gz
