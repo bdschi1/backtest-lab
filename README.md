@@ -13,6 +13,10 @@ Event-driven backtesting engine for long/short equity strategies. Models spread,
 
 This is a continually developed project. Features, interfaces, and test coverage expand over time as new research ideas and workflow needs arise.
 
+**Key questions this project answers:**
+- *What would this strategy have actually returned after real-world frictions?*
+- *Does the signal survive transaction costs, slippage, and risk constraints?*
+
 ---
 
 ## Purpose
