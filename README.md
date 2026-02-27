@@ -1,5 +1,14 @@
 # backtest-lab
 
+![Python](https://img.shields.io/badge/python-3.11+-3776AB?style=flat&logo=python&logoColor=white)
+![Polars](https://img.shields.io/badge/Polars-CD792C?style=flat&logo=polars&logoColor=white)
+![Pydantic](https://img.shields.io/badge/Pydantic-E92063?style=flat&logo=pydantic&logoColor=white)
+![Matplotlib](https://img.shields.io/badge/Matplotlib-11557C?style=flat)
+![Streamlit](https://img.shields.io/badge/Streamlit-FF4B4B?style=flat&logo=streamlit&logoColor=white)
+![Yahoo Finance](https://img.shields.io/badge/Yahoo_Finance-6001D2?style=flat&logo=yahoo&logoColor=white)
+![Bloomberg](https://img.shields.io/badge/Bloomberg-000000?style=flat&logo=bloomberg&logoColor=white)
+![Interactive Brokers](https://img.shields.io/badge/Interactive_Brokers-D71920?style=flat)
+
 Event-driven backtesting engine for long/short equity strategies. Models spread, market impact, slippage, commission, and borrow costs at every fill. Risk manager gates every trade through position sizing, drawdown circuit breakers, exposure limits, and ATR trailing stops. Regime detector adapts parameters in real time.
 
 This is a continually developed project. Features, interfaces, and test coverage expand over time as new research ideas and workflow needs arise.
@@ -547,6 +556,14 @@ python -m pytest tests/ -v
 
 ---
 
+## Contributing
+
+Contributions welcome. Areas for improvement:
+- Additional signal types and strategy implementations
+- New execution cost models and fill simulators
+- Enhanced risk overlays and regime detection methods
+- Extended reporting and tearsheet formats
+
 ## Status
 
 This project is under active, ongoing development. The core engine, risk management, and execution modeling are stable. New signal types, additional risk overlays, and extended reporting are added as research needs evolve.
@@ -557,14 +574,3 @@ This project is under active, ongoing development. The core engine, risk managem
 
 MIT
 
----
-
-![Python](https://img.shields.io/badge/python-3.11+-3776AB?style=flat&logo=python&logoColor=white)
-
-![Polars](https://img.shields.io/badge/Polars-CD792C?style=flat&logo=polars&logoColor=white)
-![Pydantic](https://img.shields.io/badge/Pydantic-E92063?style=flat&logo=pydantic&logoColor=white)
-![Matplotlib](https://img.shields.io/badge/Matplotlib-11557C?style=flat)
-![Streamlit](https://img.shields.io/badge/Streamlit-FF4B4B?style=flat&logo=streamlit&logoColor=white)
-![Yahoo Finance](https://img.shields.io/badge/Yahoo_Finance-6001D2?style=flat&logo=yahoo&logoColor=white)
-![Bloomberg](https://img.shields.io/badge/Bloomberg-000000?style=flat&logo=bloomberg&logoColor=white)
-![Interactive Brokers](https://img.shields.io/badge/Interactive_Brokers-D71920?style=flat)
