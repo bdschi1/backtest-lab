@@ -296,7 +296,7 @@ backtest-lab/
   examples/
     momentum_backtest.py    3-tier execution comparison
     configs/                YAML example configs
-  tests/                    322 tests across 24 files
+  tests/                    381 tests across 24 files
 ```
 
 ---
@@ -569,7 +569,7 @@ The run log accumulates over time as a growing corpus. This is distinct from gen
 python -m pytest tests/ -v
 ```
 
-322 tests across 24 files covering engine, signals, execution models, risk management, regime detection, bias prevention, configuration, run logging, tearsheet generation, position sizing, volatility targeting, benchmark comparison, risk decomposition, ticker mapping, and data source tracking.
+381 tests across 24 files covering engine, signals, execution models, risk management, regime detection, bias prevention, configuration, run logging, tearsheet generation, position sizing, volatility targeting, benchmark comparison, risk decomposition, ticker mapping, and data source tracking.
 
 ---
 
