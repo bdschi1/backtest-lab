@@ -50,7 +50,7 @@ ruff format .
 - `results/` directory is gitignored; each run creates a timestamped subdirectory
 
 ## Testing Conventions
-- 322 tests across 24 files in `tests/`
+- 381 tests across 24 files in `tests/`
 - Tests use synthetic/mock data exclusively -- no live API calls
 - Run with `pytest tests/ -v`; config in `pyproject.toml` sets `testpaths` and `--tb=short`
 - Bridges test graceful degradation when target repos are not installed
