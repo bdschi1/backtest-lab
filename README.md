@@ -534,6 +534,19 @@ This metadata appears in three places:
 
 The provider registry supports Yahoo Finance (always available), Bloomberg Terminal, Interactive Brokers, and planned stubs for Refinitiv/LSEG, Polygon.io, and Databento.
 
+### MCP Connectors (Claude Code / Claude Cowork)
+
+The repo includes a `.mcp.json` config that connects Claude Code sessions to external financial data providers via the [Model Context Protocol](https://modelcontextprotocol.io/). When working in Claude Code, these connectors give the AI assistant access to live data alongside the Python tooling.
+
+| Provider | What It Provides |
+|----------|-----------------|
+| S&P Global (Capital IQ) | Fundamental data, estimates, transactions |
+| FactSet | Pricing, fundamentals, analytics |
+| LSEG (Refinitiv) | Fixed income, FX, equities, macro |
+| Daloopa | Structured financial data extraction |
+
+Each connector requires an active subscription with the respective provider. If a subscription is not available, the connector is ignored — no errors, no impact on other functionality. The Python data providers (Yahoo, Bloomberg, IB) continue to work independently of MCP.
+
 ---
 
 ## Training Data Generation
@@ -562,17 +575,11 @@ python -m pytest tests/ -v
 
 ## Contributing
 
-Contributions welcome. Areas for improvement:
-- Additional signal types and strategy implementations
-- New execution cost models and fill simulators
-- Enhanced risk overlays and regime detection methods
-- Extended reporting and tearsheet formats
-
-## Status
-
-This project is under active, ongoing development. The core engine, risk management, and execution modeling are stable. New signal types, additional risk overlays, and extended reporting are added as research needs evolve.
+Under active development. Contributions welcome — areas for improvement include additional signal types, execution cost models, risk overlays, and reporting formats.
 
 ---
+
+***Curiosity compounds. Rigor endures.***
 
 ## License
 
