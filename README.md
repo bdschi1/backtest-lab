@@ -19,36 +19,7 @@ This is a continually developed project. Features, interfaces, and test coverage
 
 ---
 
-## Purpose
-
-backtest-lab exists to answer a specific question: **what would this strategy have actually returned after real-world frictions?**
-
-Many backtesting frameworks report gross returns and ignore the execution costs, risk constraints, and structural biases that separate a research idea from a deployable strategy. backtest-lab treats these as first-class concerns:
-
-- **Execution realism** -- three tiers of fill modeling from naive mid-price to Almgren-Chriss market impact, with spread, slippage, commission, and borrow cost stacks
-- **Enforced risk management** -- not just metrics after the fact, but real-time constraints that reject or size down trades before execution (ATR stops, drawdown circuit breaker, exposure limits)
-- **Bias prevention** -- structural look-ahead guards that physically prevent signals from accessing future data, walk-forward validation, and overfit detection via deflated Sharpe ratio
-- **Regime adaptation** -- volatility regime detection (threshold-based or HMM) that adjusts risk parameters and gross exposure dynamically
-
-The target user is someone running a long/short equity book who wants to stress-test signal ideas with realistic frictions before allocating capital.
-
----
-
-## Background
-
-The engine processes each trading day bar-by-bar in strict sequential order. Signals only see data up to the current date. Risk checks run before every trade. Costs accrue at execution time, not as a post-hoc adjustment.
-
-Key design choices:
-
-- **Polars** for price data (columnar, fast filtering by date)
-- **Pydantic** for configuration validation (all inputs are typed and bounded)
-- **No pandas dependency** -- Polars handles all dataframe operations
-- **No external ML deps for regime detection** -- custom Gaussian HMM with EM fitting (no hmmlearn)
-- **Provider abstraction** -- Yahoo Finance ships free; Bloomberg and Interactive Brokers plug in via the same ABC
-
----
-
-## Setup
+## Quick Start
 
 ```bash
 # Core install
@@ -66,10 +37,6 @@ pip install -e ".[dev]"         # pytest, ruff, coverage
 ```
 
 Requires Python 3.11+.
-
----
-
-## How to Use
 
 backtest-lab provides three interfaces that all share the same configuration model and execution path. Every interface builds a `RunConfig` and calls `run_backtest()`.
 
@@ -102,6 +69,8 @@ python -m cli providers
 python -m cli example
 ```
 
+Run `python -m cli run --help` for the full flag list. Supports four sizing modes (`signal`, `fixed_dollar`, `fixed_shares`, `equal_weight`), optional volatility targeting, three execution tiers (`mid`, `spread`, `impact`), and YAML config files for reproducibility.
+
 ### Interactive TUI
 
 ```bash
@@ -128,28 +97,136 @@ python -m cli run --config examples/configs/ls_with_risk.yaml
 
 ---
 
-## CLI Reference
+## How It Works
 
-Run `python -m cli run --help` for the full flag list. Key options:
+### Purpose
 
-```bash
-python -m cli run --signal momentum --live --universe AAPL,MSFT,GOOG --risk --regime
-python -m cli run --config examples/configs/ls_with_risk.yaml
-```
+backtest-lab exists to answer a specific question: **what would this strategy have actually returned after real-world frictions?**
 
-Supports four sizing modes (`signal`, `fixed_dollar`, `fixed_shares`, `equal_weight`), optional volatility targeting, three execution tiers (`mid`, `spread`, `impact`), and YAML config files for reproducibility.
+Many backtesting frameworks report gross returns and ignore the execution costs, risk constraints, and structural biases that separate a research idea from a deployable strategy. backtest-lab treats these as first-class concerns:
 
----
+- **Execution realism** -- three tiers of fill modeling from naive mid-price to Almgren-Chriss market impact, with spread, slippage, commission, and borrow cost stacks
+- **Enforced risk management** -- not just metrics after the fact, but real-time constraints that reject or size down trades before execution (ATR stops, drawdown circuit breaker, exposure limits)
+- **Bias prevention** -- structural look-ahead guards that physically prevent signals from accessing future data, walk-forward validation, and overfit detection via deflated Sharpe ratio
+- **Regime adaptation** -- volatility regime detection (threshold-based or HMM) that adjusts risk parameters and gross exposure dynamically
 
-## Output
+The target user is someone running a long/short equity book who wants to stress-test signal ideas with realistic frictions before allocating capital.
 
-Each run creates a timestamped directory under `results/` (gitignored) with an HTML tearsheet, Markdown tearsheet, chart PNGs, and a frozen YAML config. A persistent `run_log.json` accumulates summary statistics across runs.
+### Background
 
----
+The engine processes each trading day bar-by-bar in strict sequential order. Signals only see data up to the current date. Risk checks run before every trade. Costs accrue at execution time, not as a post-hoc adjustment.
 
-## Data Providers
+Key design choices:
+
+- **Polars** for price data (columnar, fast filtering by date)
+- **Pydantic** for configuration validation (all inputs are typed and bounded)
+- **No pandas dependency** -- Polars handles all dataframe operations
+- **No external ML deps for regime detection** -- custom Gaussian HMM with EM fitting (no hmmlearn)
+- **Provider abstraction** -- Yahoo Finance ships free; Bloomberg and Interactive Brokers plug in via the same ABC
+
+### Engine Flow
+
+Each bar executes in this order:
+
+1. **Update prices** -- mark all positions to market
+2. **Risk state** -- update drawdown HWM, ATR, circuit breaker
+3. **Stop-loss check** -- force-close any positions that breached stops
+4. **Regime detection** -- classify market vol, adapt parameters
+5. **Accrue borrow costs** -- daily cost on short positions
+6. **Generate signals** -- point-in-time only, no future data
+7. **Risk gate** -- approve/reject/size-down each trade
+8. **Vol-target scaling** -- scale all targets to match portfolio vol target
+9. **Execute** -- fill model + slippage + commission
+10. **Record snapshot** -- equity, costs, regime, risk state
+
+### Execution Realism
+
+Three tiers of execution modeling:
+
+| Tier | Fill | Slippage | Commission | Borrow | Use Case |
+|------|------|----------|------------|--------|----------|
+| Naive | MidPrice (close) | Zero | Zero | Zero | Quick prototyping |
+| Realistic | SpreadAware | Fixed (5 bps) | PerShare ($0.005) | Fixed | Strategy evaluation |
+| Full | MarketImpact | Volume-based | Tiered (IB) | Tiered (HTB) | Production simulation |
+
+Market impact uses the Almgren-Chriss square-root model: `impact = eta x sigma x sqrt(shares/ADV)`.
+
+### Risk Management
+
+The risk manager runs before every trade and can reject or size down:
+
+- **ATR Trailing Stop** -- trails high-water mark by N x ATR, with hard loss cap
+- **Position Sizer** -- constrains to min(signal x equity%, ADV%, notional cap)
+- **Drawdown Controller** -- circuit breaker with 3 states:
+  - NORMAL: full trading
+  - WARNING (-5%): positions scaled to 50%
+  - HALTED (-15%): no new trades until recovery
+- **Exposure Limits** -- enforces gross/net/single-name caps, scales trades to fit
+
+### Analytics
+
+Every backtest computes trade-level metrics (win rate, profit factor, payoff ratio, drawdown duration) and portfolio-level analytics (Sharpe, Sortino, max drawdown, Calmar). When live data is available, SPY benchmark comparison runs automatically (beta, alpha, information ratio, up/down capture).
+
+Post-backtest risk decomposition covers portfolio-level vol (realized, downside, systematic vs. idiosyncratic), exposure tracking (gross/net/single-name), and concentration metrics (HHI, return decomposition into beta-attributed vs. alpha P&L). All metrics appear in the HTML and Markdown tearsheets.
+
+### Regime Detection
+
+Two detectors available:
+
+- **VolatilityRegimeDetector** -- rolling realized vol vs fixed thresholds (fast, interpretable)
+- **HMMRegimeDetector** -- Gaussian HMM with custom EM fitting (more sophisticated, no external deps)
+
+Regime classifications: LOW (<12% ann vol), NORMAL (12-20%), ELEVATED (20-30%), CRISIS (>30%).
+
+The **RegimeAdapter** maps regimes to parameter overrides:
+- LOW: +20% gross, wider stops
+- NORMAL: standard parameters
+- ELEVATED: -30% gross, tighter stops, higher signal threshold
+- CRISIS: -60% gross, minimal new positions
+
+### Bias Prevention
+
+- **LookaheadGuard** -- structurally prevents signals from seeing future data (not by convention, by code)
+- **WalkForwardSplitter** -- anchored or rolling train/test splits (default: 504/63 days)
+- **OverfitDetector** -- flags if in-sample Sharpe decays >50% out-of-sample; computes deflated Sharpe ratio adjusted for multiple testing (Bailey & Lopez de Prado)
+- **Sharpe Inference** (`bias/sharpe_inference.py`) -- rigorous statistical testing for Sharpe ratios:
+  - **Probabilistic Sharpe Ratio (PSR):** P(true SR > benchmark) accounting for skewness, kurtosis, and autocorrelation (Bailey & Lopez de Prado, 2014)
+  - **Minimum Track Record Length (MinTRL):** minimum observations needed for statistical significance
+  - **Critical Sharpe Ratio:** threshold SR for rejecting H₀ at level α, adjusted for multiple testing
+  - **Statistical Power:** P(reject H₀ | true SR = SR₁) for sample size planning
+  - **False Discovery Rate:** posterior and observed FDR for strategy testing pipelines
+  - **FWER Corrections:** Bonferroni, Šidák, and Holm step-down adjustments for multiple comparisons
+  - **Expected Maximum SR:** exact E[max] of K normals via Gauss-Hermite quadrature (replaces √(2·ln(K)) approximation)
+
+In plain terms, these tools answer: is this backtest result statistically real, or could it be luck? They adjust for how many strategies were tested, how long the track record is, and whether the return distribution is well-behaved.
+
+### Bridges
+
+Integration bridges to other repos in the same ecosystem. All gracefully degrade if the target repo is not installed:
+
+| Bridge | Source Repo | What It Does |
+|--------|-------------|--------------|
+| portfolio_lab_bridge | ls-portfolio-lab | Factor exposure (CAPM/FF3/FF4) on backtest returns |
+| committee_bridge | multi-agent-investment-committee | Use pre-computed T signals as alpha source |
+| redflag_bridge | redflag_ex1_analyst | Pre-trade compliance gate (MNPI, tipping, defamation) |
+| fund_tracker_bridge | fund-tracker-13f | 13F conviction signals as universe filter |
+| kb_risk_bridge | multi-agent-investment-committee | PDF chunking for risk document knowledge base |
+
+### Data Providers
 
 yfinance is the default (free, daily OHLCV). Bloomberg and Interactive Brokers are optional installs (`pip install -e ".[bloomberg]"` or `".[ibkr]"`) with real bid/ask data. If a provider fails, the runner falls back to synthetic data automatically.
+
+| Provider | Bid/Ask | Setup |
+|----------|---------|-------|
+| Yahoo Finance | No (estimated from range) | Default, free, always available |
+| Bloomberg | Yes | `pip install -e ".[bloomberg]"`, requires Terminal |
+| Interactive Brokers | Yes | `pip install -e ".[ibkr]"`, requires TWS/Gateway |
+
+All providers share the same `DataProvider` ABC. `data/ticker_map.py` provides a static 569-ticker US equity universe (S&P 500 + notable non-index + major ETFs) with name/sector lookup functions.
+
+### Output
+
+Each run creates a timestamped directory under `results/` (gitignored) with an HTML tearsheet, Markdown tearsheet, chart PNGs, and a frozen YAML config. A persistent `run_log.json` accumulates summary statistics across runs.
 
 ---
 
@@ -220,121 +297,7 @@ backtest-lab/
 
 ---
 
-## Engine Flow
-
-Each bar executes in this order:
-
-1. **Update prices** -- mark all positions to market
-2. **Risk state** -- update drawdown HWM, ATR, circuit breaker
-3. **Stop-loss check** -- force-close any positions that breached stops
-4. **Regime detection** -- classify market vol, adapt parameters
-5. **Accrue borrow costs** -- daily cost on short positions
-6. **Generate signals** -- point-in-time only, no future data
-7. **Risk gate** -- approve/reject/size-down each trade
-8. **Vol-target scaling** -- scale all targets to match portfolio vol target
-9. **Execute** -- fill model + slippage + commission
-10. **Record snapshot** -- equity, costs, regime, risk state
-
----
-
-## Execution Realism
-
-Three tiers of execution modeling:
-
-| Tier | Fill | Slippage | Commission | Borrow | Use Case |
-|------|------|----------|------------|--------|----------|
-| Naive | MidPrice (close) | Zero | Zero | Zero | Quick prototyping |
-| Realistic | SpreadAware | Fixed (5 bps) | PerShare ($0.005) | Fixed | Strategy evaluation |
-| Full | MarketImpact | Volume-based | Tiered (IB) | Tiered (HTB) | Production simulation |
-
-Market impact uses the Almgren-Chriss square-root model: `impact = eta x sigma x sqrt(shares/ADV)`.
-
----
-
-## Risk Management
-
-The risk manager runs before every trade and can reject or size down:
-
-- **ATR Trailing Stop** -- trails high-water mark by N x ATR, with hard loss cap
-- **Position Sizer** -- constrains to min(signal x equity%, ADV%, notional cap)
-- **Drawdown Controller** -- circuit breaker with 3 states:
-  - NORMAL: full trading
-  - WARNING (-5%): positions scaled to 50%
-  - HALTED (-15%): no new trades until recovery
-- **Exposure Limits** -- enforces gross/net/single-name caps, scales trades to fit
-
----
-
-## Analytics
-
-Every backtest computes trade-level metrics (win rate, profit factor, payoff ratio, drawdown duration) and portfolio-level analytics (Sharpe, Sortino, max drawdown, Calmar). When live data is available, SPY benchmark comparison runs automatically (beta, alpha, information ratio, up/down capture).
-
-Post-backtest risk decomposition covers portfolio-level vol (realized, downside, systematic vs. idiosyncratic), exposure tracking (gross/net/single-name), and concentration metrics (HHI, return decomposition into beta-attributed vs. alpha P&L). All metrics appear in the HTML and Markdown tearsheets.
-
----
-
-## Regime Detection
-
-Two detectors available:
-
-- **VolatilityRegimeDetector** -- rolling realized vol vs fixed thresholds (fast, interpretable)
-- **HMMRegimeDetector** -- Gaussian HMM with custom EM fitting (more sophisticated, no external deps)
-
-Regime classifications: LOW (<12% ann vol), NORMAL (12-20%), ELEVATED (20-30%), CRISIS (>30%).
-
-The **RegimeAdapter** maps regimes to parameter overrides:
-- LOW: +20% gross, wider stops
-- NORMAL: standard parameters
-- ELEVATED: -30% gross, tighter stops, higher signal threshold
-- CRISIS: -60% gross, minimal new positions
-
----
-
-## Bias Prevention
-
-- **LookaheadGuard** -- structurally prevents signals from seeing future data (not by convention, by code)
-- **WalkForwardSplitter** -- anchored or rolling train/test splits (default: 504/63 days)
-- **OverfitDetector** -- flags if in-sample Sharpe decays >50% out-of-sample; computes deflated Sharpe ratio adjusted for multiple testing (Bailey & Lopez de Prado)
-- **Sharpe Inference** (`bias/sharpe_inference.py`) -- rigorous statistical testing for Sharpe ratios:
-  - **Probabilistic Sharpe Ratio (PSR):** P(true SR > benchmark) accounting for skewness, kurtosis, and autocorrelation (Bailey & Lopez de Prado, 2014)
-  - **Minimum Track Record Length (MinTRL):** minimum observations needed for statistical significance
-  - **Critical Sharpe Ratio:** threshold SR for rejecting H₀ at level α, adjusted for multiple testing
-  - **Statistical Power:** P(reject H₀ | true SR = SR₁) for sample size planning
-  - **False Discovery Rate:** posterior and observed FDR for strategy testing pipelines
-  - **FWER Corrections:** Bonferroni, Šidák, and Holm step-down adjustments for multiple comparisons
-  - **Expected Maximum SR:** exact E[max] of K normals via Gauss-Hermite quadrature (replaces √(2·ln(K)) approximation)
-
-In plain terms, these tools answer: is this backtest result statistically real, or could it be luck? They adjust for how many strategies were tested, how long the track record is, and whether the return distribution is well-behaved.
-
----
-
-## Bridges
-
-Integration bridges to other repos in the same ecosystem. All gracefully degrade if the target repo is not installed:
-
-| Bridge | Source Repo | What It Does |
-|--------|-------------|--------------|
-| portfolio_lab_bridge | ls-portfolio-lab | Factor exposure (CAPM/FF3/FF4) on backtest returns |
-| committee_bridge | multi-agent-investment-committee | Use pre-computed T signals as alpha source |
-| redflag_bridge | redflag_ex1_analyst | Pre-trade compliance gate (MNPI, tipping, defamation) |
-| fund_tracker_bridge | fund-tracker-13f | 13F conviction signals as universe filter |
-| kb_risk_bridge | multi-agent-investment-committee | PDF chunking for risk document knowledge base |
-
----
-
-## Data Providers
-
-| Provider | Bid/Ask | Setup |
-|----------|---------|-------|
-| Yahoo Finance | No (estimated from range) | Default, free, always available |
-| Bloomberg | Yes | `pip install -e ".[bloomberg]"`, requires Terminal |
-| Interactive Brokers | Yes | `pip install -e ".[ibkr]"`, requires TWS/Gateway |
-
-All providers share the same `DataProvider` ABC. `data/ticker_map.py` provides a static 569-ticker US equity universe (S&P 500 + notable non-index + major ETFs) with name/sector lookup functions.
-
----
-
-## Tests
+## Testing
 
 ```bash
 python -m pytest tests/ -v
@@ -348,11 +311,8 @@ python -m pytest tests/ -v
 
 Under active development. Contributions welcome — areas for improvement include additional signal types, execution cost models, risk overlays, and reporting formats.
 
----
-
-***Curiosity compounds. Rigor endures.***
-
 ## License
 
 MIT
 
+***Curiosity compounds. Rigor endures.***
