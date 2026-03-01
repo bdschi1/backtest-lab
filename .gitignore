@@ -56,3 +56,12 @@ HOW_IT_WORKS.md
 
 # Hardening checklist additions
 *.egg
+offload_temp/
+*.pt
+*.bin
+*.safetensors
+*.gguf
+hf_cache/
+logs/
+Desktop.ini
+.ipynb_checkpoints/
