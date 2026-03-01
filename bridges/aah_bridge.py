@@ -17,11 +17,12 @@ from __future__ import annotations
 
 import logging
 import sys
-from pathlib import Path
+
+from bridges import resolve_aah
 
 logger = logging.getLogger(__name__)
 
-_AAH_PATH = Path("/Users/bdsm4/code/bds_repos/aah")
+_AAH_PATH = resolve_aah()
 
 
 def _ensure_import():

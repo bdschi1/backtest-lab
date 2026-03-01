@@ -20,11 +20,11 @@ import logging
 import sys
 from pathlib import Path
 
+from bridges import resolve_tier1_repo
+
 logger = logging.getLogger(__name__)
 
-_REDFLAG_PATH = Path(
-    "/Users/bdsm4/code/bds_repos/Tier_1/redflag_ex1_analyst"
-)
+_REDFLAG_PATH = resolve_tier1_repo("redflag_ex1_analyst")
 
 
 def _ensure_import():

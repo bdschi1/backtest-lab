@@ -20,14 +20,12 @@ from pathlib import Path
 
 import polars as pl
 
+from bridges import resolve_tier1_repo
 from signals.base import Signal
 
 logger = logging.getLogger(__name__)
 
-_COMMITTEE_PATH = Path(
-    "/Users/bdsm4/code/bds_repos/Tier_1/"
-    "multi-agent-investment-committee"
-)
+_COMMITTEE_PATH = resolve_tier1_repo("multi-agent-investment-committee")
 
 
 def _ensure_import():

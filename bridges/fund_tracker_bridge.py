@@ -15,13 +15,12 @@ from __future__ import annotations
 
 import logging
 import sys
-from pathlib import Path
+
+from bridges import resolve_tier1_repo
 
 logger = logging.getLogger(__name__)
 
-_FUND_TRACKER_PATH = Path(
-    "/Users/bdsm4/code/bds_repos/Tier_1/fund-tracker-13f"
-)
+_FUND_TRACKER_PATH = resolve_tier1_repo("fund-tracker-13f")
 
 
 def _ensure_import():
