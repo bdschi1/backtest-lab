@@ -130,107 +130,26 @@ python -m cli run --config examples/configs/ls_with_risk.yaml
 
 ## CLI Reference
 
+Run `python -m cli run --help` for the full flag list. Key options:
+
+```bash
+python -m cli run --signal momentum --live --universe AAPL,MSFT,GOOG --risk --regime
+python -m cli run --config examples/configs/ls_with_risk.yaml
 ```
-python -m cli run [OPTIONS]
 
-Signal:
-  --signal          momentum | mean_reversion | composite (default: momentum)
-
-Data:
-  --universe        Comma-separated tickers (default: 10 large caps)
-  --start           Start date YYYY-MM-DD (default: 3 years ago)
-  --end             End date YYYY-MM-DD (default: today)
-  --live            Use live yfinance data (default: synthetic)
-  --provider        yahoo | bloomberg | ib (default: yahoo)
-
-Portfolio:
-  --capital         Initial capital (default: 1,000,000)
-  --rebalance       daily | weekly | monthly (default: weekly)
-  --max-position-pct  Max position size as % of equity (default: 10)
-
-Position Sizing:
-  --sizing-mode     signal | fixed_dollar | fixed_shares | equal_weight
-  --fixed-dollar    Dollar amount per position (with fixed_dollar mode)
-  --fixed-shares    Share count per position (with fixed_shares mode)
-
-Volatility Targeting:
-  --vol-target      Target annual vol %; enables vol targeting when set
-  --vol-lookback    Lookback days for realized vol (default: 63)
-
-Execution:
-  --fill            mid | spread | impact (default: mid)
-
-Risk & Regime:
-  --risk            Enable risk manager
-  --regime          Enable regime detection
-
-Output:
-  --tearsheet       Path for HTML tearsheet
-  --results-dir     Base results directory (default: results)
-  --config          Load from YAML config file
-  --save-config     Save current config to YAML file
-```
+Supports four sizing modes (`signal`, `fixed_dollar`, `fixed_shares`, `equal_weight`), optional volatility targeting, three execution tiers (`mid`, `spread`, `impact`), and YAML config files for reproducibility.
 
 ---
 
-## Position Sizing
+## Output
 
-Four sizing modes control how target positions are computed:
-
-| Mode | How It Works |
-|------|-------------|
-| `signal` | Signal score x max position % x equity (default) |
-| `fixed_dollar` | User specifies dollar amount per position; shares computed from price |
-| `fixed_shares` | User specifies share count per position; direction from signal |
-| `equal_weight` | Equity divided equally across all active positions |
+Each run creates a timestamped directory under `results/` (gitignored) with an HTML tearsheet, Markdown tearsheet, chart PNGs, and a frozen YAML config. A persistent `run_log.json` accumulates summary statistics across runs.
 
 ---
 
-## Volatility Targeting
+## Data Providers
 
-When enabled, portfolio positions are scaled so realized volatility tracks the target. Uses trailing realized vol over a configurable lookback window and rescales gross exposure at each rebalance.
-
-- `target_annual_vol_pct`: desired annualized vol (1-50%, default 10%)
-- `lookback_days`: trailing window for realized vol (10-252, default 63)
-- `max_leverage`: cap on upward scaling (1-10x, default 3x)
-- `min_leverage`: floor on downward scaling (0.01-1x, default 0.1x)
-
-Scale factor: `target_vol / realized_vol`, clamped to [min_leverage, max_leverage].
-
----
-
-## Output and Run Logging
-
-Each backtest creates a timestamped directory under `results/`:
-
-```
-results/
-  run_log.json                              # Persistent JSON log of all runs
-  2026-02-15_153022_123456_momentum/
-    tearsheet.html                           # Self-contained HTML report
-    tearsheet.md                             # Markdown report with PNG references
-    equity_curve.png                         # Dark-themed matplotlib charts
-    drawdown.png
-    rolling_sharpe.png
-    monthly_returns.png
-    config.yaml                              # Frozen config for reproducibility
-```
-
-The `run_log.json` file is an append-only JSON array. Each entry captures the full config snapshot, summary statistics, and file paths. It is never committed to git -- `results/` is gitignored.
-
-The Markdown tearsheet contains the same information as the HTML version: summary statistics table, chart image references, monthly returns table, cost breakdown, and trade log.
-
----
-
-## Data Source and Fallback
-
-yfinance is the default data provider. It provides daily OHLCV data for any ticker listed on NYSE, NASDAQ, or major global exchanges.
-
-**Limitations:** No intraday data. No real-time quotes. No bid/ask spreads (estimated from daily range). Data may be delayed 15-20 minutes. Adjusted close accounts for splits and dividends. Some tickers may be unavailable.
-
-Bloomberg and Interactive Brokers providers are available as optional installs and provide real bid/ask data.
-
-**Fallback chain:** If a data provider fails entirely, the runner automatically falls back to synthetic data so the backtest still completes. If a provider returns data for some tickers but not others, the missing tickers are backfilled with synthetic data and a warning is logged. This ensures runs never fail silently due to transient API issues or unsupported tickers.
+yfinance is the default (free, daily OHLCV). Bloomberg and Interactive Brokers are optional installs (`pip install -e ".[bloomberg]"` or `".[ibkr]"`) with real bid/ask data. If a provider fails, the runner falls back to synthetic data automatically.
 
 ---
 
@@ -346,74 +265,11 @@ The risk manager runs before every trade and can reject or size down:
 
 ---
 
-## Performance Analytics
+## Analytics
 
-Every backtest computes a full suite of trade-level and portfolio-level metrics:
+Every backtest computes trade-level metrics (win rate, profit factor, payoff ratio, drawdown duration) and portfolio-level analytics (Sharpe, Sortino, max drawdown, Calmar). When live data is available, SPY benchmark comparison runs automatically (beta, alpha, information ratio, up/down capture).
 
-**Trade Analytics:**
-
-| Metric | Description |
-|--------|-------------|
-| Win Rate | Percentage of profitable round-trip trades |
-| Slugging Pct | Average winning trade / average losing trade |
-| Profit Factor | Gross profit / gross loss |
-| Payoff Ratio | Average win / average loss |
-| Best / Worst Trade | Largest single-trade P&L |
-| Avg Trade | Mean realized P&L per round trip |
-
-**Drawdown Duration:**
-
-| Metric | Description |
-|--------|-------------|
-| Max DD Duration | Longest peak-to-recovery period (trading days) |
-| Max DD Recovery | Longest trough-to-recovery period (trading days) |
-| Avg DD Duration | Mean drawdown episode length |
-| Current DD Duration | Active drawdown length (0 if at HWM) |
-
----
-
-## Benchmark Comparison
-
-When live data is available, the runner automatically fetches SPY for the same date range and computes benchmark-relative metrics:
-
-| Metric | Description |
-|--------|-------------|
-| Relative Return | Strategy cumulative return minus SPY |
-| Beta | CAPM regression slope (covariance / variance) |
-| Alpha | Jensen's alpha, annualized |
-| Information Ratio | Annualized active return / tracking error |
-| Tracking Error | Annualized standard deviation of active returns |
-| Up / Down Capture | Strategy participation in benchmark up and down periods |
-| Correlation | Pearson correlation to benchmark daily returns |
-
-If SPY data is unavailable, the backtest still completes — benchmark metrics are omitted.
-
----
-
-## Risk Decomposition
-
-Post-backtest risk decomposition operates at three levels:
-
-**Portfolio-level volatility:**
-- Annualized vol, downside vol (semi-deviation)
-- Rolling 21-day and 63-day realized vol with current, average, max, and min
-- Vol decomposition into systematic (beta) and idiosyncratic components
-
-**Exposure tracking:**
-- Gross, net, long, and short exposure as % of equity (time-series averages and finals)
-- Position count statistics (average, max)
-- Beta-net exposure (sum of position_beta × position_weight)
-
-**Concentration and decomposition:**
-- HHI (Herfindahl-Hirschman Index) for position concentration
-- Top-1 and top-5 name weights
-- Beta-attributed P&L vs. alpha P&L (return decomposition)
-- Idiosyncratic return ratio (% of variance unexplained by market)
-- Idiosyncratic volatility and idiosyncratic Sharpe ratio
-
-In plain terms: how concentrated is the portfolio, how much of the return came from market exposure vs. stock-picking, and is the stock-specific return consistent enough to be meaningful.
-
-All risk decomposition metrics appear in the HTML tearsheet, Markdown tearsheet, and Streamlit dashboard.
+Post-backtest risk decomposition covers portfolio-level vol (realized, downside, systematic vs. idiosyncratic), exposure tracking (gross/net/single-name), and concentration metrics (HHI, return decomposition into beta-attributed vs. alpha P&L). All metrics appear in the HTML and Markdown tearsheets.
 
 ---
 
@@ -474,92 +330,7 @@ Integration bridges to other repos in the same ecosystem. All gracefully degrade
 | Bloomberg | Yes | `pip install -e ".[bloomberg]"`, requires Terminal |
 | Interactive Brokers | Yes | `pip install -e ".[ibkr]"`, requires TWS/Gateway |
 
-### Bloomberg Setup
-
-Install the optional dependency and ensure a Bloomberg Terminal or B-PIPE session is running:
-
-```bash
-pip install -e ".[bloomberg]"
-```
-
-The provider connects lazily on first data request (default: `localhost:8194`). Tickers are automatically converted to Bloomberg format (`AAPL` becomes `AAPL US Equity`). Fields: PX_OPEN, PX_HIGH, PX_LOW, PX_LAST, PX_VOLUME, BID, ASK. To use from the CLI:
-
-```bash
-python -m cli run --live --provider bloomberg --signal momentum
-```
-
-### Interactive Brokers Setup
-
-Install the optional dependency and ensure TWS or IB Gateway is running:
-
-```bash
-pip install -e ".[ibkr]"
-```
-
-Default connection: `127.0.0.1:7497` (TWS paper trading). For live trading use port `7496`; for IB Gateway use `4001`/`4002`. The provider supports daily OHLCV via `reqHistoricalData` and real-time snapshots via `reqMktData`. Bid/ask data is fetched as a separate BID_ASK bar request. To use from the CLI:
-
-```bash
-python -m cli run --live --provider ib --signal momentum
-```
-
-Both providers share the same `DataProvider` ABC and can be swapped with a single flag change. If a provider is unavailable at runtime, the factory falls back to Yahoo Finance automatically.
-
-### Ticker Mapping
-
-`data/ticker_map.py` provides a static US equity universe (569 tickers) covering:
-
-- **All ~503 S&P 500 constituents** (including dual-class shares)
-- **~40 notable non-index stocks** (PLTR, UBER, RIVN, GME, BABA, TSM, NVO, ARM, etc.)
-- **~25 major ETFs** (SPY, QQQ, sector SPDRs, GLD, TLT, HYG, IBIT, etc.)
-
-Each entry maps ticker → company name + GICS sector (or "ETF"). Functions: `ticker_to_name()`, `ticker_to_sector()`, `name_to_ticker()` (fuzzy reverse lookup), `get_sector_map()`, `validate_tickers()`.
-
-This is a hardcoded, point-in-time snapshot — no API call on every run. Index rebalances require manual update.
-
-**Known issue:** The ticker LLY (Eli Lilly & Co.) may resolve to a different security in some data providers outside yfinance. yfinance correctly maps LLY to Eli Lilly. When using Bloomberg or IB, verify the resolved instrument matches Eli Lilly (NYSE: LLY, ISIN: US5324571083). This is documented in the `_KNOWN_TICKER_ISSUES` registry and `validate_tickers()` warns when LLY is in the universe.
-
-### Data Source Transparency
-
-Every backtest run records its data provenance. The runner tracks:
-- Provider used (Yahoo Finance, Bloomberg, IB, or Synthetic fallback)
-- Data frequency (daily, intraday, tick)
-- Date range fetched
-- Tickers resolved vs. failed
-- Provider-specific limitations
-
-This metadata appears in three places:
-1. **Streamlit banner** — colored info box at top of results showing provider, date range, ticker count
-2. **Tearsheets** (HTML + Markdown) — data source line at top of report
-3. **Run log** (`run_log.json`) — `data_source` object in each entry
-
-The provider registry supports Yahoo Finance (always available), Bloomberg Terminal, Interactive Brokers, and planned stubs for Refinitiv/LSEG, Polygon.io, and Databento.
-
-### MCP Connectors (Claude Code / Claude Cowork)
-
-The repo includes a `.mcp.json` config that connects Claude Code sessions to external financial data providers via the [Model Context Protocol](https://modelcontextprotocol.io/). When working in Claude Code, these connectors give the AI assistant access to live data alongside the Python tooling.
-
-| Provider | What It Provides |
-|----------|-----------------|
-| S&P Global (Capital IQ) | Fundamental data, estimates, transactions |
-| FactSet | Pricing, fundamentals, analytics |
-| LSEG (Refinitiv) | Fixed income, FX, equities, macro |
-| Daloopa | Structured financial data extraction |
-
-Each connector requires an active subscription with the respective provider. If a subscription is not available, the connector is ignored — no errors, no impact on other functionality. The Python data providers (Yahoo, Bloomberg, IB) continue to work independently of MCP.
-
----
-
-## Training Data Generation
-
-The structured output of each backtest run (config YAML, summary JSON, trade log, cost attribution) can serve as labeled training data for financial language models. Each entry in `run_log.json` maps a complete input configuration to observed outcomes with full cost decomposition — the kind of structured evaluation that requires domain expertise to produce manually.
-
-A parameter sweep across signal types, sizing modes, risk settings, and regime configurations generates supervised examples at scale. Each example captures:
-
-- **Input**: full `RunConfig` snapshot (signal parameters, sizing mode, risk thresholds, execution tier, universe, date range)
-- **Output**: summary statistics (Sharpe, Sortino, max drawdown, Calmar, total costs, stops triggered, trades rejected), cost-attributed returns, and trade-level detail
-- **Context**: why a strategy underperformed (e.g., risk manager halted trading at -15% drawdown, transaction costs exceeded gross alpha, vol regime shifted from NORMAL to CRISIS mid-backtest)
-
-The run log accumulates over time as a growing corpus. This is distinct from generic financial text data — every entry is a structured input-to-outcome pair with ground truth from a simulation that enforces real-world constraints.
+All providers share the same `DataProvider` ABC. `data/ticker_map.py` provides a static 569-ticker US equity universe (S&P 500 + notable non-index + major ETFs) with name/sector lookup functions.
 
 ---
 
