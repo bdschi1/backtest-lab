@@ -23,7 +23,7 @@ from pathlib import Path
 logger = logging.getLogger(__name__)
 
 _REDFLAG_PATH = Path(
-    "/Users/bdsm4/Library/CloudStorage/Dropbox/bds_repos/Tier_1/redflag_ex1_analyst"
+    "/Users/bdsm4/code/bds_repos/Tier_1/redflag_ex1_analyst"
 )
 
 

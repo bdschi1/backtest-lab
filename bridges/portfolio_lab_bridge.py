@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 # Path to ls-portfolio-lab
 _PORTFOLIO_LAB_PATH = Path(
-    "/Users/bdsm4/Library/CloudStorage/Dropbox/bds_repos/Tier_1/ls-portfolio-lab"
+    "/Users/bdsm4/code/bds_repos/Tier_1/ls-portfolio-lab"
 )
 
 

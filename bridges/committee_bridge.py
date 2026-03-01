@@ -25,7 +25,7 @@ from signals.base import Signal
 logger = logging.getLogger(__name__)
 
 _COMMITTEE_PATH = Path(
-    "/Users/bdsm4/Library/CloudStorage/Dropbox/bds_repos/Tier_1/"
+    "/Users/bdsm4/code/bds_repos/Tier_1/"
     "multi-agent-investment-committee"
 )
 

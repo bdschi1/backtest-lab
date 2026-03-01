@@ -202,3 +202,49 @@ class TestKBRiskBridge:
         result = build_risk_kb_from_directory("/nonexistent/dir")
         assert isinstance(result, list)
         assert len(result) == 0
+
+
+# ---------------------------------------------------------------------------
+# AAH Bridge tests
+# ---------------------------------------------------------------------------
+
+class TestAAHBridge:
+    def test_screen_text_graceful_fallback(self):
+        """Should return passed=True when aah is not importable."""
+        from bridges.aah_bridge import screen_text
+
+        result = screen_text("Apple's Q4 revenue was $94.9 billion.")
+        assert isinstance(result, dict)
+        assert "passed" in result
+        assert "hallucination_probability" in result
+
+    def test_screen_text_returns_expected_keys(self):
+        """Verify return dict has all expected keys."""
+        from bridges.aah_bridge import screen_text
+
+        result = screen_text("Test claim.")
+        expected_keys = {
+            "passed", "hallucination_probability", "total_claims",
+            "flagged_claims", "critical_failures", "strategies_used",
+        }
+        # Either the real keys or fallback with error key
+        assert expected_keys.issubset(result.keys())
+
+    def test_screen_committee_memo_graceful_fallback(self):
+        """Should not crash when aah is not installed."""
+        from bridges.aah_bridge import screen_committee_memo
+
+        result = screen_committee_memo(
+            memo_text="Revenue grew 15% year-over-year.",
+            gather_data_output="Actual revenue growth was 12%.",
+        )
+        assert isinstance(result, dict)
+        assert "passed" in result
+
+    def test_screen_text_empty_input(self):
+        """Empty text should not crash."""
+        from bridges.aah_bridge import screen_text
+
+        result = screen_text("")
+        assert isinstance(result, dict)
+        assert result["passed"] is True

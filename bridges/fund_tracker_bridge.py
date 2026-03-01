@@ -20,7 +20,7 @@ from pathlib import Path
 logger = logging.getLogger(__name__)
 
 _FUND_TRACKER_PATH = Path(
-    "/Users/bdsm4/Library/CloudStorage/Dropbox/bds_repos/Tier_1/fund-tracker-13f"
+    "/Users/bdsm4/code/bds_repos/Tier_1/fund-tracker-13f"
 )
 
 
