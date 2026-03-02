@@ -65,3 +65,4 @@ hf_cache/
 logs/
 Desktop.ini
 .ipynb_checkpoints/
+.mcp.json
